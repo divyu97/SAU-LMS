@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="/static/css/admin.css" rel="stylesheet">
+</head>
+<body>
+    <div id="header">
+        <div id="login-details">{{ username }} logged in as {{ user_type }}</div>
+        <div id="session-actions">
+            <a href="{{ url_for('logout') }}"><button id="logout">Logout</button></a>
+        </div>
+    </div>
+    <div id="admin-container">
+        <div id="sidebar">
+            <a href="/admin/memreq"><div class="section" id="mem-req">Membership Requests</div></a>
+            <a href="/admin/viewfac"><div class="section" id="view-faculty">Faculty Members</div></a>
+            <a href="/admin/viewstud"><div class="section" id="view-student">Students</div></a>
+            <a href="/admin/viewbooks"><div class="section" id="view-books">Books</div></a>
+            <a href="/admin/viewcopies"><div class="section" id="view-copies">Book Copies</div></a>
+            <a href="/admin/borrowedbooks"><div class="section" id="borrowed-books">Borrowed Books</div></a>
+            <a href="/admin/bookrequests"><div class="section" id="book-requests">Book Requests</div></a>
+            <a href="/admin/genrep"><div class="section" id="gen-rep">Generate Reports 1</div></a>
+            <a href="/admin/genrep2"><div class="section" id="gen-rep2">Generate Reports 2</div></a>
+        </div>
+        <div id="main-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

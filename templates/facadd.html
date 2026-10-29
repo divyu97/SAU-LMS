@@ -1,0 +1,38 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/viewfac/new">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="id">Member ID</label>
+                <input autofocus id="id" name="id">
+            </div>
+            <div class="field">
+                <label for="name">Full Name</label>
+                <input id="name" name="name">
+            </div>
+            <div class="field">
+                <label for="office">Office No.</label>
+                <input id="office" name="office">
+            </div>
+            <div class="field">
+                <label for="dept">Department</label>
+                <input id="dept" name="dept">
+            </div>
+            <div class="field">
+                <label for="email">Email</label>    
+                <input id="email" name="email" type="email">
+            </div>
+            <div class="field">
+                <label for="username">Username</label>
+                <input id="username" name="username">
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password">
+            </div>
+        </div>
+        <button class="reject" type="submit">Add</button>
+        <a href="/admin/viewfac"><button class="approve" type="button">Cancel</button></a>
+    </form>
+{% endblock %}

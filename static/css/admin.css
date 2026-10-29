@@ -1,0 +1,446 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+* {
+    font-family: Nunito, Arial;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f0f2f5;
+    color: #333;
+}
+
+/* -------------------- HEADER -------------------- */
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0d1e46;
+    padding: 1rem 2rem;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* -------------------- LOGOUT BUTTON -------------------- */
+#logout {
+    padding: 0.6rem 1.3rem;
+    border: none;
+    border-radius: 6px;
+    background: #DA2F2B;
+    color: white;
+    font-size: 1rem;
+}
+#logout:hover {
+    background: #a1211f;
+    cursor: pointer;
+}
+
+/* -------------------- MAIN LAYOUT -------------------- */
+#admin-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* -------------------- SIDEBAR -------------------- */
+#sidebar {
+    width: 250px;
+    background: #0d1e46;
+    color: #dfe4f2;
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+}
+
+.section {
+    padding: 1rem 1.4rem;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+}
+.section:hover {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+/* -------------------- MAIN CONTENT -------------------- */
+#main-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+/* -------------------- TABLE CONTAINER -------------------- */
+#data {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* -------------------- SUPER RESPONSIVE GRID TABLE -------------------- */
+#col-names {
+    display: grid;
+    grid-auto-columns: minmax(180px, 1fr);
+    grid-auto-flow: column;
+    font-weight: 600;
+    background: #eef1f6;
+    padding: 0.8rem;
+    border-radius: 6px;
+}
+
+.row {
+    display: grid;
+    grid-auto-columns: minmax(180px, 1fr);
+    grid-auto-flow: column;
+    padding: 0.8rem;
+    border-bottom: 1px solid #dddddd;
+}
+
+.row div {
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+    font-size: 1rem;
+}
+
+/* -------------------- ACTION COLUMN FIX -------------------- */
+.row-action {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+/* -------------------- BUTTONS -------------------- */
+.update, .approve, .remove, .reject {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.update, .approve { background: #1e8d1e; }
+.update:hover, .approve:hover { background: #176a17; }
+
+.remove, .reject { background: #DA2F2B; }
+.remove:hover, .reject:hover { background: #a1211f; }
+
+a { text-decoration: none; }
+
+/* -------------------- RESPONSIVE -------------------- */
+@media (max-width: 900px) {
+    #admin-container {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .section {
+        flex: 1;
+        text-align: center;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    #header {
+        flex-direction: column;
+        gap: 0.4rem;
+        text-align: center;
+    }
+}
+
+/* ----------------------------------------------------
+   BEAUTIFUL ADMIN FORMS (USING YOUR EXISTING SELECTORS)
+---------------------------------------------------- */
+
+/* Center the form in the main content area */
+#main-content form {
+    background: white;
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 650px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Container holding all fields */
+#login-input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+}
+
+/* Each field group */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Labels */
+.field label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #11234d;
+}
+
+/* Inputs */
+.field input,
+.field select {
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 2px solid #c9cdd8;
+    background: #fafbff;
+    font-size: 1rem;
+    color: #333;
+}
+
+.field input:focus,
+.field select:focus {
+    outline: none;
+    border-color: #586ae2;
+    background: white;
+}
+
+/* Button container (your Add / Cancel) */
+#main-content form button {
+    padding: 0.8rem 1.4rem;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+}
+
+/* Override existing approve/reject colors but keep class names */
+.reject { 
+    background: #DA2F2B !important;
+    color: white;
+}
+.reject:hover {
+    background: #a1211f !important;
+    cursor: pointer;
+}
+
+.approve {
+    background: #1b7a1b !important;
+    color: white;
+}
+.approve:hover {
+    background: #135513 !important;
+    cursor: pointer;
+}
+
+/* Buttons spacing */
+#main-content form a button {
+    margin-left: 1rem;
+}
+
+/* Align buttons horizontally */
+#main-content form {
+    position: relative;
+}
+#main-content form .reject,
+#main-content form a button {
+    width: fit-content;
+}
+
+/* Make the form responsive */
+@media (max-width: 600px) {
+    #main-content form {
+        padding: 1.4rem;
+    }
+    .field label {
+        font-size: 1rem;
+    }
+    .reject, .approve {
+        width: 100%;
+        margin: 0;
+    }
+    #main-content form a button {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.8rem;
+    }
+}
+
+/* ---------------------------------------------
+   CENTER ONLY THE NEW/UPDATE FORMS IN ADMIN UI
+---------------------------------------------- */
+
+/* Select ONLY forms that contain #login-input-container */
+#main-content form:has(#login-input-container) {
+    background: white;
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+
+    /* CENTER THE FORM */
+    margin: 2rem auto 0 auto;
+}
+
+/* Center the button group */
+#main-content form:has(#login-input-container) > .reject,
+#main-content form:has(#login-input-container) > a {
+    display: inline-block;
+}
+
+/* Make sure #login-input-container fills width but stays centered */
+#login-input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+}
+
+/****************************************************
+   MODERN CORPORATE BLUE THEME — LMS ADMIN DASHBOARD
+*****************************************************/
+
+/* GLOBAL TEXT COLOR FIX */
+#header, #sidebar, .section {
+    color: #E6EAF5;
+}
+
+/* ---------------- HEADER ---------------- */
+#header {
+    background: #3949AB; /* deep navy */
+}
+
+/* ---------------- SIDEBAR ---------------- */
+#sidebar {
+    background: #0E1A35;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+
+.section {
+    color: #E6EAF5;
+    transition: 0.2s ease;
+}
+.section:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+/* ---------------- BUTTONS ---------------- */
+.approve,
+.update {
+    background: #1B7A1B !important;
+}
+.approve:hover,
+.update:hover {
+    background: #135513 !important;
+}
+
+.remove,
+.reject {
+    background: #DA2F2B !important;
+}
+.remove:hover,
+.reject:hover {
+    background: #A1211F !important;
+}
+
+/* ---------------- ACTION BUTTONS (optional new styling) ---------------- */
+button, .approve, .remove, .reject, .update {
+    border-radius: 6px !important;
+    font-weight: 600;
+}
+
+/* ---------------- MAIN CONTENT AREA ---------------- */
+#main-content {
+    background: #F4F6FA;
+}
+
+/* ---------------- TABLES ---------------- */
+#data {
+    background: #FFFFFF;
+    border: 1px solid #D3D9E6;
+    border-radius: 12px;
+}
+
+#col-names {
+    background: #EEF3FF; /* soft blue */
+    color: #1C2333;
+    font-weight: 600;
+}
+
+.row div {
+    color: #1C2333;
+}
+
+/* ---------------- FORMS (NEW/UPDATE PAGES) ---------------- */
+#main-content form:has(#login-input-container) {
+    background: #FFFFFF;
+    padding: 2rem 2.5rem;
+    border-radius: 14px;
+    border: 1px solid #D3D9E6;
+    width: 100%;
+    max-width: 620px;
+    margin: 2rem auto;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* All inputs */
+#login-input-container input,
+#login-input-container select {
+    background: #FAFBFF;
+    border: 2px solid #D3D9E6;
+    color: #1C2333;
+}
+
+#login-input-container input:focus,
+#login-input-container select:focus {
+    border-color: #2952CC !important;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(41, 82, 204, 0.2);
+}
+
+/* Form labels */
+#login-input-container label {
+    color: #0E1A35 !important;
+    font-weight: 600;
+}
+
+/* Form buttons */
+#main-content form:has(#login-input-container) .reject {
+    background: #2952CC !important;
+}
+#main-content form:has(#login-input-container) .reject:hover {
+    background: #1F3FA3 !important;
+}
+
+/* Keep Cancel button as success-green */
+#main-content form:has(#login-input-container) .approve {
+    background: #1B7A1B !important;
+}
+#main-content form:has(#login-input-container) .approve:hover {
+    background: #135513 !important;
+}
+
+/* ---------------- MOBILE TWEAKS ---------------- */
+@media (max-width: 600px) {
+    #main-content form:has(#login-input-container) {
+        padding: 1.4rem;
+        border-radius: 10px;
+    }
+}

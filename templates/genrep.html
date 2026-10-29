@@ -1,0 +1,34 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <div style="font-size: 2rem; color: black; font-weight: bold;">Underutilized Books</div>
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols1 %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+        </div>
+        {% for row in borrows %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <div style="font-size: 2rem; color: black; font-weight: bold;">High Demand Books</div>
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols2 %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+        </div>
+        {% for row in titles %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

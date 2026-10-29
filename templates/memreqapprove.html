@@ -1,0 +1,14 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/memreq/approve/{{ id }}">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="member">Member ID</label>    
+                <input id="member" name="member">
+            </div>
+        </div>
+        <button class="reject" type="submit">Submit</button>
+        <a href="/admin/memreq"><button class="approve" type="button">Cancel</button></a>
+    </form>
+{% endblock %}

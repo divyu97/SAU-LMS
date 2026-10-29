@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply</title>
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="login-container">
+        <div id="login-main-heading">Apply for Student Membership</div>
+        <form method="POST" action="/signup">
+            <div id="login-input-container">
+                <div class="field">
+                    <label for="name">Full Name</label>
+                    <input autofocus id="name" name="name">
+                </div>
+                <div class="field">
+                    <label for="major">Major</label>
+                    <input id="major" name="major">
+                </div>
+                <div class="field">
+                    <label for="dept">Department</label>
+                    <input id="dept" name="dept">
+                </div>
+                <div class="field">
+                    <label for="enrolment">Enrolment Number</label>
+                    <input name="enrolment" id="enrolment">
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>    
+                    <input id="email" name="email" type="email">
+                </div>
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input id="username" name="username">
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password">
+                </div>
+            </div>
+            <button id="sign-up" type="submit">Submit</button>
+        </form>
+        <div id="redirect">Already have an account? <a href="{{ url_for('login') }}">Login</a></div>
+    </div>
+</body>
+</html>

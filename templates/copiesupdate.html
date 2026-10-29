@@ -1,0 +1,19 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/viewcopies/update/{{ id }}">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="status">Status</label>
+                <select value="{{ status }}" id="status" name="status">
+                    <option disabled selected>Select Status</option>
+                    <option>Available</option>
+                    <option>Issued</option>
+                    <option>Lost</option>
+                </select>
+            </div>
+        </div>
+        <button class="reject" type="submit">Submit</button>
+        <a href="/admin/viewcopies"><button class="approve" type="button">Cancel</button></a>
+    </form>
+{% endblock %}

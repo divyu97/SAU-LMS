@@ -1,0 +1,23 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+            <div class="col-name">Action</div>
+        </div>
+        {% for row in rows %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+                <div class="row-action">
+                    <a href="/admin/viewstud/update/{{ memIDS[loop.index0] }}"><button class="update">Update</button></a>
+                    <a href="/admin/viewstud/remove/{{ memIDS[loop.index0] }}"><button class="remove">Remove</button></a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

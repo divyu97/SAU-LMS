@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="login-container">
+        <div id="login-main-heading">LMS Login</div>
+        <form method="POST" action="/">
+            <div id="login-input-container">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input autofocus id="username" name="username">
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <select name="user-type" id="user-type-select">
+                    <option selected disabled>Select account type</option>
+                    <option value="admin">Library Admin</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="student">Student</option>
+                </select>
+            </div>
+            <button id="login" type="submit">Login</button>
+        </form>
+        <div id="redirect">Do not have a student account? <a href="{{ url_for('signup') }}">Apply now</a></div>
+    </div>
+</body>
+</html>

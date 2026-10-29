@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+body {
+    margin: 0;
+    background-color: #11234d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 1rem;
+}
+
+* {
+    font-family: Nunito, Arial;
+    box-sizing: border-box;
+}
+
+#login-container {
+    width: 100%;
+    max-width: 450px;
+    background: rgba(255,255,255,0.07);
+    padding: 2rem 2.5rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+#login-main-heading {
+    font-size: 2.3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* FORM */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+label {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 6px;
+    border: 2px solid #888;
+    background-color: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 1rem;
+}
+
+input:focus, select:focus {
+    border-color: #fff;
+    outline: none;
+}
+
+button {
+    padding: 0.7rem;
+    border-radius: 6px;
+    border: none;
+    background-color: #DA2F2B;
+    color: white;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+}
+button:hover {
+    background-color: #a1211f;
+    cursor: pointer;
+}
+
+#redirect {
+    margin-top: 1rem;
+    color: #eee;
+    text-align: center;
+}
+#redirect a {
+    color: #fff;
+    font-weight: bold;
+}
+
+@media (max-width: 480px) {
+    #login-main-heading {
+        font-size: 1.8rem;
+    }
+}
+
+/* Increase spacing between fields in login/signup forms */
+#login-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2.2rem;   /* adjust spacing here */
+}
+
+
+select {
+    background-color: #11234d !important;
+}

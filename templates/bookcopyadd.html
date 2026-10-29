@@ -1,0 +1,27 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/viewbooks/addcopy/{{ isbn }}">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="copy">Copy ID</label>
+                <input id="copy" name="copy" type="copy">
+            </div>
+            <div class="field">
+                <label for="adate">Acquisition Date</label>
+                <input id="adate" name="adate" type="date">
+            </div>
+            <div class="field">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option disabled selected>Select Status</option>
+                    <option>Available</option>
+                    <option>Issued</option>
+                    <option>Lost</option>
+                </select>
+            </div>
+        </div>
+        <button class="reject" type="submit">Add</button>
+        <a href="/admin/viewbooks"><button class="approve" type="button">Cancel</button></a>
+    </form>
+{% endblock %}

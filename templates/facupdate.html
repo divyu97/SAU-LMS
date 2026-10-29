@@ -1,0 +1,26 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/viewfac/update/{{ id }}">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="name">Full Name</label>
+                <input value="{{ fullname }}" autofocus id="name" name="name">
+            </div>
+            <div class="field">
+                <label for="office">Office No.</label>
+                <input value="{{ office }}" id="office" name="office">
+            </div>
+            <div class="field">
+                <label for="dept">Department</label>
+                <input value="{{ dept }}" id="dept" name="dept">
+            </div>
+            <div class="field">
+                <label for="email">Email</label>    
+                <input value="{{ email }}" id="email" name="email" type="email">
+            </div>
+        </div>
+        <button class="reject" type="submit">Submit</button>
+        <a href="/admin/viewfac"><button class="approve" type="button">Cancel</button></a>
+    </form>
+{% endblock %}

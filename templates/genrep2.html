@@ -1,0 +1,49 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <div style="font-size: 2rem; color: black; font-weight: bold;">Usage Pattern (Student vs Faculty)</div>
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols1 %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+        </div>
+        {% for row in usage %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <div style="font-size: 2rem; color: black; font-weight: bold;">Top Unfulfilled Faculty Requests</div>
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols2 %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+        </div>
+        {% for row in requests %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+    <div style="font-size: 2rem; color: black; font-weight: bold;">Book Availability (by Subject) for Faculty</div>
+    <div id="data">
+        <div id="col-names">
+            {% for col in cols3 %}
+                <div class="col-name">{{ col }}</div>
+            {% endfor %}
+        </div>
+        {% for row in books %}
+            <div class="row" id="row">
+                {% for value in row %}
+                    <div>{{ value }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

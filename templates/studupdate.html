@@ -1,0 +1,30 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <form method="POST" action="/admin/viewstud/update/{{ id }}">
+        <div id="login-input-container">
+            <div class="field">
+                <label for="name">Full Name</label>
+                <input value="{{ fullname }}" autofocus id="name" name="name">
+            </div>
+            <div class="field">
+                <label for="major">Major</label>
+                <input value="{{ major }}" id="major" name="major">
+            </div>
+            <div class="field">
+                <label for="dept">Department</label>
+                <input value="{{ dept }}" id="dept" name="dept">
+            </div>
+            <div class="field">
+                <label for="enrolment">Enrolment Number</label>
+                <input value="{{ enrolment }}" name="enrolment" id="enrolment">
+            </div>
+            <div class="field">
+                <label for="email">Email</label>    
+                <input value="{{ email }}" id="email" name="email" type="email">
+            </div>
+        </div>
+        <button class="reject" type="submit">Submit</button>
+        <a href="\admin\viewstud"><button class="approve" type="button" type="button">Cancel</button></a>
+    </form>
+{% endblock %}
