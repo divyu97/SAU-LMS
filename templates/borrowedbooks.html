@@ -1,7 +1,17 @@
 {% extends "admin.html" %}
 
 {% block content %}
-    <a href="/admin/borrowedbooks/new"><button class="update" style="background-color: rgb(0, 102, 255);">Add Record</button></a>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: #0d1e46;">Book Circulation & Borrowing</h2>
+        <a href="/admin/borrowedbooks/new"><button class="update" style="background-color: #0066ff; padding: 0.6rem 1.2rem; font-size: 1rem;">+ Issue Book Copy</button></a>
+    </div>
+
+    {% if error %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #f5c6cb; font-weight: 600;">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
     <div id="data">
         <div id="col-names">
             {% for col in cols %}
@@ -12,13 +22,24 @@
         {% for row in rows %}
             <div class="row" id="row">
                 {% for value in row %}
-                    <div>{{ value }}</div>
+                    <div>
+                        {% if loop.index == 7 and value is not none %}
+                            ₹{{ "%.2f"|format(value|float) }}
+                        {% else %}
+                            {{ value if value is not none and value != '' else '-' }}
+                        {% endif %}
+                    </div>
                 {% endfor %}
                 <div class="row-action">
-                    <a href="/admin/borrowedbooks/update/{{ row[0] }}"><button class="update">Update</button></a>
-                    <a href="/admin/borrowedbooks/remove/{{ row[0] }}"><button class="remove">Remove</button></a>
+                    {% if row[5] is none or row[5] == '' %}
+                        <a href="/admin/borrowedbooks/return/{{ row[0] }}" onclick="return confirm('Confirm book return for Copy {{ row[1] }}?');"><button class="approve" style="background-color: #28a745;">Return</button></a>
+                    {% endif %}
+                    <a href="/admin/borrowedbooks/update/{{ row[0] }}"><button class="update">Edit</button></a>
+                    <a href="/admin/borrowedbooks/remove/{{ row[0] }}" onclick="return confirm('Delete this borrowing record?');"><button class="remove">Delete</button></a>
                 </div>
             </div>
+        {% else %}
+            <div style="padding: 1.5rem; text-align: center; color: #666;">No circulation records found.</div>
         {% endfor %}
     </div>
 {% endblock %}

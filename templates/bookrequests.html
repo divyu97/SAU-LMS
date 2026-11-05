@@ -1,6 +1,9 @@
 {% extends "admin.html" %}
 
 {% block content %}
+    <div style="margin-bottom: 1rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: #0d1e46;">Book Acquisition Requests</h2>
+    </div>
     <div id="data">
         <div id="col-names">
             {% for col in cols %}
@@ -11,13 +14,29 @@
         {% for row in rows %}
             <div class="row" id="row">
                 {% for value in row %}
-                    <div>{{ value }}</div>
+                    <div>
+                        {% if loop.index == 7 %}
+                            {% if value == 'Pending' %}
+                                <span style="background: #fff3cd; color: #856404; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Pending</span>
+                            {% elif value == 'Acquired' %}
+                                <span style="background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Acquired</span>
+                            {% elif value == 'Rejected' %}
+                                <span style="background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 4px; font-weight: 600;">Rejected</span>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        {% else %}
+                            {{ value if value is not none and value != '' else '-' }}
+                        {% endif %}
+                    </div>
                 {% endfor %}
                 <div class="row-action">
-                    <a href="/admin/bookrequests/update/{{ row[0] }}"><button class="update">Update</button></a>
-                    <a href="/admin/bookrequests/remove/{{ row[0] }}"><button class="remove">Remove</button></a>
+                    <a href="/admin/bookrequests/update/{{ row[0] }}"><button class="update">Decide / Update</button></a>
+                    <a href="/admin/bookrequests/remove/{{ row[0] }}" onclick="return confirm('Delete this request?');"><button class="remove">Remove</button></a>
                 </div>
             </div>
+        {% else %}
+            <div style="padding: 1.5rem; text-align: center; color: #666;">No book requests found.</div>
         {% endfor %}
     </div>
 {% endblock %}

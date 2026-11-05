@@ -1,34 +1,47 @@
 {% extends "admin.html" %}
 
 {% block content %}
-    <form method="POST" action="/admin/borrowedbooks/new">
-        <div id="login-input-container">
+    <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: #0d1e46;">Issue Book Copy</h2>
+    </div>
+
+    {% if error %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #f5c6cb; font-weight: 600;">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="/admin/borrowedbooks/new" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 600px;">
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="field">
-                <label for="copy">Copy ID</label>
-                <input autofocus id="copy" name="copy">
+                <label for="copy" style="color: #333;">Copy ID *</label>
+                <input autofocus id="copy" name="copy" value="{{ copy or '' }}" required placeholder="e.g. C003" style="background: white; color: #333; border: 1px solid #ccc;">
+                <small style="color: #666;">Only copies with 'Available' status can be issued.</small>
             </div>
             <div class="field">
-                <label for="member">Member ID</label>
-                <input id="member" name="member">
+                <label for="member" style="color: #333;">Member ID *</label>
+                <input id="member" name="member" value="{{ member or '' }}" required placeholder="e.g. S1001 or F5001" style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="bdate">Borrow Date</label>
-                <input id="bdate" name="bdate" type="date">
+                <label for="bdate" style="color: #333;">Borrow Date *</label>
+                <input id="bdate" name="bdate" type="date" value="{{ bdate or '' }}" required style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="ddate">Due Date</label>
-                <input id="ddate" name="ddate" type="date">
+                <label for="ddate" style="color: #333;">Due Date *</label>
+                <input id="ddate" name="ddate" type="date" value="{{ ddate or '' }}" required style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="rdate">Return Date</label>
-                <input id="rdate" name="rdate" type="date">
+                <label for="rdate" style="color: #333;">Return Date (Leave blank if currently issued)</label>
+                <input id="rdate" name="rdate" type="date" value="{{ rdate or '' }}" style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="fine">Fine Amount</label>
-                <input id="fine" name="fine" type="number" min="0.00" step="0.01" value="0.00">
+                <label for="fine" style="color: #333;">Fine Amount</label>
+                <input id="fine" name="fine" type="number" min="0.00" step="0.01" value="{{ fine or '0.00' }}" style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
         </div>
-        <button class="reject" type="submit">Add</button>
-        <a href="/admin/borrowedbooks"><button class="approve" type="button">Cancel</button></a>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+            <button class="approve" type="submit" style="background-color: #0066ff;">Confirm Issue Book</button>
+            <a href="/admin/borrowedbooks"><button class="reject" type="button" style="background-color: #6c757d;">Cancel</button></a>
+        </div>
     </form>
 {% endblock %}

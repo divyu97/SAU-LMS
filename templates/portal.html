@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Portal - SAU Library</title>
+    <link href="/static/css/admin.css" rel="stylesheet">
+    <style>
+        .portal-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .portal-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .portal-card h2 {
+            color: #0d1e46;
+            font-size: 1.4rem;
+            margin-bottom: 1.2rem;
+            border-bottom: 2px solid #eef1f6;
+            padding-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .portal-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+        .portal-form-grid .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .portal-form-grid label {
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .portal-form-grid input, .portal-form-grid select {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: white;
+            color: #333;
+            font-size: 1rem;
+        }
+        .portal-btn {
+            padding: 0.75rem 1.8rem;
+            border-radius: 6px;
+            border: none;
+            background: #0066ff;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .portal-btn:hover {
+            background: #0052cc;
+        }
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .badge-acquired {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #c3e6cb;
+            font-weight: 600;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+            font-weight: 600;
+        }
+        .note-text {
+            font-style: italic;
+            color: #495057;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border-left: 3px solid #6c757d;
+        }
+        @media (max-width: 768px) {
+            .portal-container {
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+            .portal-card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body style="height: auto; min-height: 100vh;">
+    <div id="header">
+        <div id="login-details">
+            <strong>SAU Library</strong> | {{ username }} (ID: {{ member_id }}) 
+            <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; margin-left: 0.5rem;">{{ user_type }}</span>
+        </div>
+        <div id="session-actions">
+            <a href="{{ url_for('logout') }}"><button id="logout">Logout</button></a>
+        </div>
+    </div>
+
+    <div class="portal-container">
+        {% if message %}
+            <div class="alert-success">
+                ✅ {{ message }}
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="alert-error">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
+
+        <!-- FR-18: Submit Book Request Form -->
+        <div class="portal-card">
+            <h2>📖 Submit a Book Request</h2>
+            <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
+                Can't find a book in the library catalogue? Submit a request for acquisition. Faculty and students can request new titles or additional copies.
+            </p>
+            <form method="POST" action="/portal/request">
+                <div class="portal-form-grid">
+                    <div class="field">
+                        <label for="title">Book Title *</label>
+                        <input type="text" id="title" name="title" required placeholder="e.g. Designing Data-Intensive Applications">
+                    </div>
+                    <div class="field">
+                        <label for="author">Author *</label>
+                        <input type="text" id="author" name="author" required placeholder="e.g. Martin Kleppmann">
+                    </div>
+                    <div class="field">
+                        <label for="request_type">Request Type *</label>
+                        <select id="request_type" name="request_type" required>
+                            <option value="New Title">New Title (Not currently in library)</option>
+                            <option value="More Copies">More Copies (High demand existing book)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="portal-btn">Submit Book Request</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- FR-19: My Requests Table -->
+        <div class="portal-card">
+            <h2>📋 My Acquisition Requests</h2>
+            <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
+                Track the status of all your book acquisition requests and view librarian decision remarks.
+            </p>
+            <div id="data">
+                <div id="col-names" style="grid-auto-columns: minmax(140px, 1fr);">
+                    <div class="col-name">Req ID</div>
+                    <div class="col-name">Book Title</div>
+                    <div class="col-name">Author</div>
+                    <div class="col-name">Type</div>
+                    <div class="col-name">Request Date</div>
+                    <div class="col-name">Status</div>
+                    <div class="col-name" style="min-width: 200px;">Decision Note</div>
+                </div>
+                {% for req in requests %}
+                    <div class="row" style="grid-auto-columns: minmax(140px, 1fr);">
+                        <div>#{{ req[0] }}</div>
+                        <div style="font-weight: 600;">{{ req[1] }}</div>
+                        <div>{{ req[2] or '-' }}</div>
+                        <div>{{ req[3] }}</div>
+                        <div>{{ req[4] }}</div>
+                        <div>
+                            {% if req[5] == 'Pending' %}
+                                <span class="badge-pending">⏳ Pending</span>
+                            {% elif req[5] == 'Acquired' %}
+                                <span class="badge-acquired">✓ Acquired</span>
+                            {% elif req[5] == 'Rejected' %}
+                                <span class="badge-rejected">✗ Rejected</span>
+                            {% else %}
+                                {{ req[5] }}
+                            {% endif %}
+                        </div>
+                        <div style="min-width: 200px;">
+                            {% if req[6] %}
+                                <div class="note-text">{{ req[6] }}</div>
+                            {% else %}
+                                <span style="color: #999;">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="padding: 2rem; text-align: center; color: #888;">
+                        You have not submitted any book acquisition requests yet. Use the form above to submit your first request.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

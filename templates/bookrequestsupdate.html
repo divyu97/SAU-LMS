@@ -1,19 +1,39 @@
 {% extends "admin.html" %}
 
 {% block content %}
-    <form method="POST" action="/admin/bookrequests/update/{{ id }}">
-        <div id="login-input-container">
+    <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: #0d1e46;">Review Book Request #{{ id }}</h2>
+    </div>
+    <form method="POST" action="/admin/bookrequests/update/{{ id }}" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 600px;">
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="field">
-                <label for="status">Status</label>
-                <select value="{{ status }}" id="status" name="status">
-                    <option disabled selected>Select Status</option>
-                    <option>Pending</option>
-                    <option>Acquired</option>
-                    <option>Rejected</option>
+                <label style="color: #333;">Requested Title</label>
+                <input type="text" value="{{ title }}" disabled style="background: #f4f6f9; color: #333; border: 1px solid #ccc;">
+            </div>
+            <div class="field">
+                <label style="color: #333;">Requester Member ID</label>
+                <input type="text" value="{{ requester }}" disabled style="background: #f4f6f9; color: #333; border: 1px solid #ccc;">
+            </div>
+            <div class="field">
+                <label style="color: #333;">Request Type</label>
+                <input type="text" value="{{ req_type }}" disabled style="background: #f4f6f9; color: #333; border: 1px solid #ccc;">
+            </div>
+            <div class="field">
+                <label for="status" style="color: #333;">Decision Status *</label>
+                <select id="status" name="status" style="background: white; color: #333; border: 1px solid #ccc;" required>
+                    <option value="Pending" {% if status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Acquired" {% if status == 'Acquired' %}selected{% endif %}>Acquired (Book Purchased/Added)</option>
+                    <option value="Rejected" {% if status == 'Rejected' %}selected{% endif %}>Rejected (Declined)</option>
                 </select>
             </div>
+            <div class="field">
+                <label for="decision_note" style="color: #333;">Decision Note (Reason for rejection or acquisition remarks)</label>
+                <textarea id="decision_note" name="decision_note" rows="4" placeholder="e.g., 'Budget constraint for this semester', 'Out of print', or 'New copy placed on shelf C-2'" style="width: 100%; padding: 0.7rem; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; color: #333; font-family: inherit;">{{ decision_note }}</textarea>
+            </div>
         </div>
-        <button class="reject" type="submit">Submit</button>
-        <a href="/admin/bookrequests"><button class="approve" type="button">Cancel</button></a>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+            <button class="approve" type="submit" style="background-color: #0066ff;">Save Decision</button>
+            <a href="/admin/bookrequests"><button class="reject" type="button" style="background-color: #6c757d;">Cancel</button></a>
+        </div>
     </form>
 {% endblock %}

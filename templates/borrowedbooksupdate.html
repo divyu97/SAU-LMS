@@ -1,26 +1,40 @@
 {% extends "admin.html" %}
 
 {% block content %}
-    <form method="POST" action="/admin/borrowedbooks/update/{{ id }}">
-        <div id="login-input-container">
+    <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: #0d1e46;">Update Circulation Record #{{ id }}</h2>
+    </div>
+
+    {% if error %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #f5c6cb; font-weight: 600;">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="/admin/borrowedbooks/update/{{ id }}" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 600px;">
+        <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="field">
-                <label for="bdate">Borrow Date</label>
-                <input value="{{ bdate }}" id="bdate" name="bdate" type="date">
+                <label for="bdate" style="color: #333;">Borrow / Issue Date *</label>
+                <input value="{{ bdate }}" id="bdate" name="bdate" type="date" required style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="ddate">Due Date</label>
-                <input value="{{ ddate }}" id="ddate" name="ddate" type="date">
+                <label for="ddate" style="color: #333;">Due Date *</label>
+                <input value="{{ ddate }}" id="ddate" name="ddate" type="date" required style="background: white; color: #333; border: 1px solid #ccc;">
             </div>
             <div class="field">
-                <label for="rdate">Return Date</label>
-                <input value="{{ rdate }}" id="rdate" name="rdate" type="date">
+                <label for="rdate" style="color: #333;">Return Date</label>
+                <input value="{{ rdate or '' }}" id="rdate" name="rdate" type="date" style="background: white; color: #333; border: 1px solid #ccc;">
+                <small style="color: #666;">Setting Return Date will trigger fine calculation if overdue and mark copy as 'Available'.</small>
             </div>
             <div class="field">
-                <label for="fine">Fine Amount</label>
-                <input value="{{ fine }}" id="fine" name="fine" type="number" min="0.00" step="0.01">
+                <label for="fine" style="color: #333;">Fine Amount (₹)</label>
+                <input value="{{ fine or '0.00' }}" id="fine" name="fine" type="number" min="0.00" step="0.01" style="background: white; color: #333; border: 1px solid #ccc;">
+                <small style="color: #666;">Standard fine is ₹10.00 per overdue day automatically calculated on return.</small>
             </div>
         </div>
-        <button class="reject" type="submit">Submit</button>
-        <a href="/admin/borrowedbooks"><button class="approve" type="button">Cancel</button></a>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+            <button class="approve" type="submit" style="background-color: #0066ff;">Save Changes</button>
+            <a href="/admin/borrowedbooks"><button class="reject" type="button" style="background-color: #6c757d;">Cancel</button></a>
+        </div>
     </form>
 {% endblock %}
