@@ -30,6 +30,33 @@
             align-items: center;
             gap: 0.5rem;
         }
+        /* Navigation Tabs */
+        .portal-nav {
+            display: flex;
+            gap: 0.8rem;
+            border-bottom: 2px solid #dfe4f2;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .portal-nav-item {
+            padding: 0.6rem 1.4rem;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #495057;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #e9ecef;
+        }
+        .portal-nav-item:hover {
+            background: #dde2e6;
+            color: #0d1e46;
+        }
+        .portal-nav-item.active {
+            background: #0066ff;
+            color: white;
+        }
         .portal-form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -96,6 +123,33 @@
             font-size: 0.85rem;
             display: inline-block;
         }
+        .badge-available {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .badge-issued {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .badge-returned {
+            background: #e2e3e5;
+            color: #383d41;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
         .alert-success {
             background-color: #d4edda;
             color: #155724;
@@ -120,6 +174,31 @@
             border-radius: 4px;
             border-left: 3px solid #6c757d;
         }
+        .summary-card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+        }
+        .summary-card .val {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0d1e46;
+        }
+        .summary-card .lbl {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 600;
+            margin-top: 0.2rem;
+            text-transform: uppercase;
+        }
         @media (max-width: 768px) {
             .portal-container {
                 margin: 1rem auto;
@@ -127,6 +206,9 @@
             }
             .portal-card {
                 padding: 1.2rem;
+            }
+            .portal-nav {
+                flex-direction: column;
             }
         }
     </style>
@@ -145,18 +227,150 @@
     <div class="portal-container">
         {% if message %}
             <div class="alert-success">
-                ✅ {{ message }}
+                {{ message }}
             </div>
         {% endif %}
         {% if error %}
             <div class="alert-error">
-                ⚠️ {{ error }}
+                {{ error }}
             </div>
         {% endif %}
 
+        <!-- Navigation Tabs -->
+        <div class="portal-nav">
+            <a href="/portal?tab=search" class="portal-nav-item {% if active_tab == 'search' %}active{% endif %}">Catalogue Search (FR-11)</a>
+            <a href="/portal?tab=loans" class="portal-nav-item {% if active_tab == 'loans' %}active{% endif %}">My Loans and Fines (FR-17)</a>
+            <a href="/portal?tab=requests" class="portal-nav-item {% if active_tab == 'requests' %}active{% endif %}">Book Requests (FR-18, FR-19)</a>
+        </div>
+
+        <!-- TAB 1: CATALOGUE SEARCH (FR-11) -->
+        {% if active_tab == 'search' %}
+        <div class="portal-card">
+            <h2>Library Catalogue Search</h2>
+            <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
+                Search our book collection across titles, authors, subjects, and ISBNs. Real-time availability shows how many copies are currently on the shelf ready for borrowing.
+            </p>
+            <form method="GET" action="/portal" style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <input type="hidden" name="tab" value="search">
+                <input type="text" name="q" value="{{ query or '' }}" placeholder="Search by title, author, subject, or ISBN..." style="flex: 1; min-width: 250px; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem;">
+                <button type="submit" class="portal-btn">Search Books</button>
+                {% if query %}
+                    <a href="/portal?tab=search"><button type="button" class="portal-btn" style="background: #6c757d;">Clear</button></a>
+                {% endif %}
+            </form>
+
+            <div id="data">
+                <div id="col-names" style="grid-auto-columns: minmax(130px, 1fr);">
+                    <div class="col-name" style="min-width: 140px;">ISBN</div>
+                    <div class="col-name" style="min-width: 200px;">Title</div>
+                    <div class="col-name">Author(s)</div>
+                    <div class="col-name">Subject</div>
+                    <div class="col-name">Year</div>
+                    <div class="col-name">Total Copies</div>
+                    <div class="col-name">Available Copies</div>
+                    <div class="col-name">Status</div>
+                </div>
+                {% for b in books %}
+                    <div class="row" style="grid-auto-columns: minmax(130px, 1fr);">
+                        <div style="min-width: 140px; font-family: monospace; font-size: 0.9rem;">{{ b[0] }}</div>
+                        <div style="min-width: 200px; font-weight: 700; color: #0d1e46;">{{ b[1] }}</div>
+                        <div>{{ b[2] or '-' }}</div>
+                        <div>{{ b[3] }}</div>
+                        <div>{{ b[4] or '-' }}</div>
+                        <div><strong>{{ b[5] }}</strong></div>
+                        <div>
+                            <strong style="color: {% if b[6] > 0 %}#28a745{% else %}#dc3545{% endif %}; font-size: 1.1rem;">{{ b[6] }}</strong>
+                        </div>
+                        <div>
+                            {% if b[6] > 0 %}
+                                <span class="badge-available">In Stock</span>
+                            {% else %}
+                                <span class="badge-issued">Out of Stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="padding: 2.5rem; text-align: center; color: #888;">
+                        No books matching your search query were found in the catalogue. Try another keyword or submit an acquisition request.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 2: MY LOANS & FINES (FR-17) -->
+        {% if active_tab == 'loans' %}
+        <div class="portal-card">
+            <h2>My Active Loans and Borrowing History</h2>
+            <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
+                Keep track of all books issued to you, check impending due dates, view calculated overdue fines, and confirm return status.
+            </p>
+
+            <div class="summary-card-container">
+                <div class="summary-card">
+                    <div class="val">{{ active_count }}</div>
+                    <div class="lbl">Currently Borrowed</div>
+                </div>
+                <div class="summary-card">
+                    <div class="val" style="color: #dc3545;">{{ overdue_count }}</div>
+                    <div class="lbl">Overdue Books</div>
+                </div>
+                <div class="summary-card">
+                    <div class="val" style="color: #e65100;">₹{{ "%.2f"|format(total_unpaid_fines|float) }}</div>
+                    <div class="lbl">Outstanding Fines</div>
+                </div>
+            </div>
+
+            <div id="data">
+                <div id="col-names" style="grid-auto-columns: minmax(130px, 1fr);">
+                    <div class="col-name">Loan ID</div>
+                    <div class="col-name">Copy ID</div>
+                    <div class="col-name" style="min-width: 220px;">Book Title</div>
+                    <div class="col-name">Issue Date</div>
+                    <div class="col-name">Due Date</div>
+                    <div class="col-name">Return Date</div>
+                    <div class="col-name">Fine Amount</div>
+                    <div class="col-name">Status</div>
+                </div>
+                {% for loan in loans %}
+                    <div class="row" style="grid-auto-columns: minmax(130px, 1fr);">
+                        <div>#{{ loan[0] }}</div>
+                        <div style="font-family: monospace;">{{ loan[1] }}</div>
+                        <div style="min-width: 220px; font-weight: 700; color: #0d1e46;">{{ loan[2] }}</div>
+                        <div>{{ loan[3] }}</div>
+                        <div>{{ loan[4] }}</div>
+                        <div>{{ loan[5] if loan[5] else '-' }}</div>
+                        <div>
+                            {% if loan[6] and loan[6]|float > 0 %}
+                                <strong style="color: #dc3545;">₹{{ "%.2f"|format(loan[6]|float) }}</strong>
+                            {% else %}
+                                <span style="color: #28a745;">₹0.00</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if loan[5] %}
+                                <span class="badge-returned">Returned</span>
+                            {% elif loan[7] == 'Overdue' %}
+                                <span class="badge-rejected">Overdue</span>
+                            {% else %}
+                                <span class="badge-pending">Active</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="padding: 2.5rem; text-align: center; color: #888;">
+                        You have no current or past borrowing records on file.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 3: BOOK REQUESTS (FR-18, FR-19) -->
+        {% if active_tab == 'requests' %}
         <!-- FR-18: Submit Book Request Form -->
         <div class="portal-card">
-            <h2>📖 Submit a Book Request</h2>
+            <h2>Submit a Book Request</h2>
             <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
                 Can't find a book in the library catalogue? Submit a request for acquisition. Faculty and students can request new titles or additional copies.
             </p>
@@ -186,7 +400,7 @@
 
         <!-- FR-19: My Requests Table -->
         <div class="portal-card">
-            <h2>📋 My Acquisition Requests</h2>
+            <h2>My Acquisition Requests</h2>
             <p style="color: #666; margin-bottom: 1.2rem; font-size: 0.95rem;">
                 Track the status of all your book acquisition requests and view librarian decision remarks.
             </p>
@@ -209,11 +423,11 @@
                         <div>{{ req[4] }}</div>
                         <div>
                             {% if req[5] == 'Pending' %}
-                                <span class="badge-pending">⏳ Pending</span>
+                                <span class="badge-pending">Pending</span>
                             {% elif req[5] == 'Acquired' %}
-                                <span class="badge-acquired">✓ Acquired</span>
+                                <span class="badge-acquired">Acquired</span>
                             {% elif req[5] == 'Rejected' %}
-                                <span class="badge-rejected">✗ Rejected</span>
+                                <span class="badge-rejected">Rejected</span>
                             {% else %}
                                 {{ req[5] }}
                             {% endif %}
@@ -233,6 +447,8 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
+
     </div>
 </body>
 </html>

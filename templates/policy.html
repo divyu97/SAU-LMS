@@ -1,0 +1,67 @@
+{% extends "admin.html" %}
+
+{% block content %}
+    <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.6rem; font-weight: 700; color: #0d1e46;">Library Policy and Operational Thresholds</h2>
+        <p style="color: #666; font-size: 0.95rem; margin-top: 0.3rem;">
+            Manage global operational parameters dynamically (FR-27, FR-28, NFR-09). Changes directly govern future loan issuance, overdue calculations, and stock reports without code changes.
+        </p>
+    </div>
+
+    {% if message %}
+        <div style="background-color: #d4edda; color: #155724; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; border: 1px solid #c3e6cb; font-weight: 600;">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="/admin/policy" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 800px;">
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <div style="background: #f8f9fa; padding: 1.2rem; border-radius: 8px; border-left: 4px solid #0066ff;">
+                <label for="LOAN_PERIOD_DAYS" style="color: #0d1e46; font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 0.3rem;">
+                    Standard Loan Period (Days) *
+                </label>
+                <p style="color: #666; font-size: 0.88rem; margin-bottom: 0.6rem;">
+                    Default borrowing tenure in days used when issuing book copies to students and faculty.
+                </p>
+                <input type="number" id="LOAN_PERIOD_DAYS" name="LOAN_PERIOD_DAYS" min="1" max="90" required value="{{ policies.get('LOAN_PERIOD_DAYS', '14') }}" style="background: white; color: #333; border: 1px solid #ccc; width: 100%; padding: 0.7rem; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="background: #f8f9fa; padding: 1.2rem; border-radius: 8px; border-left: 4px solid #28a745;">
+                <label for="FINE_RATE_PER_DAY" style="color: #0d1e46; font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 0.3rem;">
+                    Daily Overdue Fine Rate (₹ per day) *
+                </label>
+                <p style="color: #666; font-size: 0.88rem; margin-bottom: 0.6rem;">
+                    Fine charged per day when a book is returned after its assigned due date.
+                </p>
+                <input type="number" id="FINE_RATE_PER_DAY" name="FINE_RATE_PER_DAY" min="0" step="0.50" max="500" required value="{{ policies.get('FINE_RATE_PER_DAY', '10.00') }}" style="background: white; color: #333; border: 1px solid #ccc; width: 100%; padding: 0.7rem; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="background: #f8f9fa; padding: 1.2rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+                <label for="DEAD_STOCK_YEARS" style="color: #0d1e46; font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 0.3rem;">
+                    Dead Stock Age Threshold (Years) *
+                </label>
+                <p style="color: #666; font-size: 0.88rem; margin-bottom: 0.6rem;">
+                    Minimum book acquisition age (in years) before a title qualifies for underutilized / dead stock analysis.
+                </p>
+                <input type="number" id="DEAD_STOCK_YEARS" name="DEAD_STOCK_YEARS" min="1" max="10" required value="{{ policies.get('DEAD_STOCK_YEARS', '1') }}" style="background: white; color: #333; border: 1px solid #ccc; width: 100%; padding: 0.7rem; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="background: #f8f9fa; padding: 1.2rem; border-radius: 8px; border-left: 4px solid #dc3545;">
+                <label for="DEAD_STOCK_USAGE_LIMIT" style="color: #0d1e46; font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 0.3rem;">
+                    Dead Stock Usage Limit (Maximum Borrows) *
+                </label>
+                <p style="color: #666; font-size: 0.88rem; margin-bottom: 0.6rem;">
+                    Titles borrowed fewer times than this threshold are flagged in the Underutilized Books Report.
+                </p>
+                <input type="number" id="DEAD_STOCK_USAGE_LIMIT" name="DEAD_STOCK_USAGE_LIMIT" min="1" max="50" required value="{{ policies.get('DEAD_STOCK_USAGE_LIMIT', '2') }}" style="background: white; color: #333; border: 1px solid #ccc; width: 100%; padding: 0.7rem; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button class="approve" type="submit" style="background-color: #0066ff; padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600;">Save Policy Settings</button>
+            <a href="/admin/borrowedbooks"><button class="reject" type="button" style="background-color: #6c757d; padding: 0.75rem 1.5rem; font-size: 1rem;">Cancel</button></a>
+        </div>
+    </form>
+{% endblock %}

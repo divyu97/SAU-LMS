@@ -51,6 +51,18 @@ def ensure_db():
         cursor = connection.cursor()
     return connection, cursor
 
+def get_policy(key, default):
+    """Fetch dynamic policy configuration (FR-27, FR-28, NFR-09)."""
+    try:
+        _, cur = ensure_db()
+        cur.execute("SELECT Policy_Value FROM POLICY WHERE Policy_Key=%s", (key,))
+        row = cur.fetchone()
+        if row and row[0]:
+            return row[0]
+    except Exception:
+        pass
+    return default
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -125,7 +137,6 @@ def signup():
         password = request.form.get("password")
         today = datetime.today().strftime('%Y-%m-%d')
 
-        # Hash password with bcrypt immediately upon registration (FR-01, NFR-01)
         hashed_pw = bcrypt.generate_password_hash(password).decode("utf-8")
 
         conn, cur = ensure_db()
@@ -148,28 +159,127 @@ def logout():
     logout_user()
     return redirect("/")
 
-# ----------------- MEMBER PORTAL (FR-18, FR-19) ----------------- #
+# ----------------- MEMBER PORTAL (FR-11, FR-17, FR-18, FR-19) ----------------- #
 
 @app.route("/portal", methods=["GET"])
 @login_required
 @role_required("student", "faculty")
 def member_portal():
     conn, cur = ensure_db()
-    # Fetch member's acquisition requests with Decision_Note
-    cur.execute("""
-        SELECT Request_ID, Requested_Title, Author, Request_Type, Request_Date, Status, Decision_Note 
-        FROM REQUEST 
-        WHERE Requester_ID=%s 
-        ORDER BY Request_Date DESC, Request_ID DESC
-    """, (current_user.member_id,))
-    requests = cur.fetchall()
+    active_tab = request.args.get("tab", "search")
+    query = request.args.get("q", "").strip()
+
+    books = []
+    loans = []
+    requests = []
+    active_count = 0
+    overdue_count = 0
+    total_unpaid_fines = 0.0
+    daily_fine_rate = float(get_policy("FINE_RATE_PER_DAY", "10.00"))
+    today = datetime.today().date()
+
+    if active_tab == "search":
+        # FR-11: Catalogue Search with real-time copy availability count
+        if query:
+            search_pattern = f"%{query}%"
+            cur.execute("""
+                SELECT 
+                    B.ISBN, 
+                    B.Title, 
+                    COALESCE(GROUP_CONCAT(A.Name ORDER BY BA.Author_Order SEPARATOR ', '), 'Unknown') AS Authors,
+                    B.Subject, 
+                    B.Pub_Year, 
+                    COUNT(C.Copy_ID) AS Total_Copies,
+                    SUM(CASE WHEN C.Status = 'Available' THEN 1 ELSE 0 END) AS Available_Copies
+                FROM BOOK B
+                LEFT JOIN BOOK_AUTHOR BA ON B.ISBN = BA.ISBN
+                LEFT JOIN AUTHOR A ON BA.Author_ID = A.Author_ID
+                LEFT JOIN COPY C ON B.ISBN = C.ISBN
+                WHERE B.Title LIKE %s OR B.Subject LIKE %s OR B.ISBN LIKE %s OR A.Name LIKE %s
+                GROUP BY B.ISBN, B.Title, B.Subject, B.Pub_Year
+                ORDER BY B.Title ASC
+            """, [search_pattern, search_pattern, search_pattern, search_pattern])
+        else:
+            cur.execute("""
+                SELECT 
+                    B.ISBN, 
+                    B.Title, 
+                    COALESCE(GROUP_CONCAT(A.Name ORDER BY BA.Author_Order SEPARATOR ', '), 'Unknown') AS Authors,
+                    B.Subject, 
+                    B.Pub_Year, 
+                    COUNT(C.Copy_ID) AS Total_Copies,
+                    SUM(CASE WHEN C.Status = 'Available' THEN 1 ELSE 0 END) AS Available_Copies
+                FROM BOOK B
+                LEFT JOIN BOOK_AUTHOR BA ON B.ISBN = BA.ISBN
+                LEFT JOIN AUTHOR A ON BA.Author_ID = A.Author_ID
+                LEFT JOIN COPY C ON B.ISBN = C.ISBN
+                GROUP BY B.ISBN, B.Title, B.Subject, B.Pub_Year
+                ORDER BY B.Title ASC
+            """)
+        books = cur.fetchall()
+
+    elif active_tab == "loans":
+        # FR-17: Member Active Loans & Overdue Fines
+        cur.execute("""
+            SELECT 
+                BW.Borrow_ID,
+                BW.Copy_ID,
+                B.Title,
+                BW.Issue_Date,
+                BW.Due_Date,
+                BW.Return_Date,
+                BW.Fine_Amount
+            FROM BORROWING BW
+            JOIN COPY C ON BW.Copy_ID = C.Copy_ID
+            JOIN BOOK B ON C.ISBN = B.ISBN
+            WHERE BW.Member_ID = %s
+            ORDER BY BW.Issue_Date DESC, BW.Borrow_ID DESC
+        """, (current_user.member_id,))
+        raw_loans = cur.fetchall()
+
+        for loan in raw_loans:
+            borrow_id, copy_id, title, issue_date, due_date, return_date, fine_amt = loan
+            fine_val = float(fine_amt or 0.0)
+
+            # Check if active loan is overdue
+            due_dt = datetime.strptime(str(due_date), "%Y-%m-%d").date() if isinstance(due_date, str) else due_date
+            loan_status = "Returned" if return_date else "Active"
+
+            if not return_date:
+                active_count += 1
+                if today > due_dt:
+                    loan_status = "Overdue"
+                    overdue_count += 1
+                    # Dynamic fine calculation for currently overdue book
+                    overdue_days = (today - due_dt).days
+                    fine_val = max(fine_val, float(overdue_days * daily_fine_rate))
+
+            total_unpaid_fines += fine_val
+            loans.append((borrow_id, copy_id, title, issue_date, due_date, return_date, fine_val, loan_status))
+
+    elif active_tab == "requests":
+        # FR-18, FR-19: Book Requests & Decision Note
+        cur.execute("""
+            SELECT Request_ID, Requested_Title, Author, Request_Type, Request_Date, Status, Decision_Note 
+            FROM REQUEST 
+            WHERE Requester_ID=%s 
+            ORDER BY Request_Date DESC, Request_ID DESC
+        """, (current_user.member_id,))
+        requests = cur.fetchall()
 
     return render_template(
         "portal.html",
         username=current_user.username,
         member_id=current_user.member_id,
         user_type=current_user.user_type.capitalize(),
-        requests=requests
+        active_tab=active_tab,
+        query=query,
+        books=books,
+        loans=loans,
+        requests=requests,
+        active_count=active_count,
+        overdue_count=overdue_count,
+        total_unpaid_fines=total_unpaid_fines
     )
 
 @app.route("/portal/request", methods=["POST"])
@@ -191,24 +301,8 @@ def member_submit_request():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        # Fall through to render portal with error
 
-    cur.execute("""
-        SELECT Request_ID, Requested_Title, Author, Request_Type, Request_Date, Status, Decision_Note 
-        FROM REQUEST 
-        WHERE Requester_ID=%s 
-        ORDER BY Request_Date DESC, Request_ID DESC
-    """, (current_user.member_id,))
-    requests = cur.fetchall()
-
-    return render_template(
-        "portal.html",
-        username=current_user.username,
-        member_id=current_user.member_id,
-        user_type=current_user.user_type.capitalize(),
-        requests=requests,
-        message="Your book request has been submitted successfully!"
-    )
+    return redirect("/portal?tab=requests")
 
 @app.route("/student")
 @login_required
@@ -230,6 +324,43 @@ def faculty_redirect():
 def admin():
     return redirect("/admin/memreq")
 
+@app.route("/admin/policy", methods=["GET", "POST"])
+@login_required
+@role_required("admin")
+def admin_policy():
+    """FR-27, FR-28, NFR-09: Dynamic Library Policy Configuration."""
+    conn, cur = ensure_db()
+    message = None
+
+    if request.method == "POST":
+        loan_period = request.form.get("LOAN_PERIOD_DAYS", "14")
+        fine_rate = request.form.get("FINE_RATE_PER_DAY", "10.00")
+        dead_stock_years = request.form.get("DEAD_STOCK_YEARS", "1")
+        dead_stock_usage = request.form.get("DEAD_STOCK_USAGE_LIMIT", "2")
+
+        try:
+            conn.begin()
+            cur.execute("UPDATE POLICY SET Policy_Value=%s WHERE Policy_Key='LOAN_PERIOD_DAYS'", (loan_period,))
+            cur.execute("UPDATE POLICY SET Policy_Value=%s WHERE Policy_Key='FINE_RATE_PER_DAY'", (fine_rate,))
+            cur.execute("UPDATE POLICY SET Policy_Value=%s WHERE Policy_Key='DEAD_STOCK_YEARS'", (dead_stock_years,))
+            cur.execute("UPDATE POLICY SET Policy_Value=%s WHERE Policy_Key='DEAD_STOCK_USAGE_LIMIT'", (dead_stock_usage,))
+            conn.commit()
+            message = "Policy parameters updated successfully! Subsequent loans and returns will use these updated rules."
+        except Exception as e:
+            conn.rollback()
+
+    cur.execute("SELECT Policy_Key, Policy_Value FROM POLICY")
+    rows = cur.fetchall()
+    policies = {row[0]: row[1] for row in rows}
+
+    return render_template(
+        "policy.html",
+        username=current_user.username,
+        user_type=current_user.user_type.capitalize(),
+        policies=policies,
+        message=message
+    )
+
 @app.route("/admin/<section>", methods=["GET", "POST"])
 @login_required
 @role_required("admin")
@@ -237,7 +368,6 @@ def admin_section(section):
     conn, cur = ensure_db()
 
     if section == "memreq":
-        # Remove plain text password from query & view (FR-01, NFR-02)
         cur.execute("SELECT Request_ID, Name, Major, Department, Enrolment_No, Email, Username, Request_Date FROM STUDENT_REQUEST")
         result = cur.fetchall()
         rows = []
@@ -255,10 +385,11 @@ def admin_section(section):
         )
 
     elif section == "viewfac":
-        # Remove password column from view
+        # FR-04, FR-05: Faculty Management Table View
         cur.execute("""
             SELECT M.Member_ID, M.Name AS "Full Name", F.Office_No, F.Department, M.Email, M.Username 
             FROM MEMBER M JOIN FACULTY F ON M.Member_ID = F.Member_ID
+            ORDER BY M.Member_ID ASC
         """)
         result = cur.fetchall()
         rows = []
@@ -276,10 +407,10 @@ def admin_section(section):
         )
 
     elif section == "viewstud":
-        # Remove password column from view
         cur.execute("""
             SELECT M.Member_ID, M.Name AS "Full Name", S.Major, S.Department, S.Enrolment_No, M.Email, M.Username
             FROM MEMBER M JOIN STUDENT S ON M.Member_ID = S.Member_ID
+            ORDER BY M.Member_ID ASC
         """)
         result = cur.fetchall()
         rows = []
@@ -297,7 +428,7 @@ def admin_section(section):
         )
 
     elif section == "viewbooks":
-        cur.execute("SELECT * FROM BOOK")
+        cur.execute("SELECT * FROM BOOK ORDER BY Title ASC")
         rows = cur.fetchall()
         return render_template(
             section + ".html",
@@ -308,7 +439,7 @@ def admin_section(section):
         )
 
     elif section == "viewcopies":
-        cur.execute("SELECT * FROM COPY")
+        cur.execute("SELECT * FROM COPY ORDER BY Copy_ID ASC")
         rows = cur.fetchall()
         return render_template(
             section + ".html",
@@ -319,7 +450,7 @@ def admin_section(section):
         )
 
     elif section == "borrowedbooks":
-        cur.execute("SELECT Borrow_ID, Copy_ID, Member_ID, Issue_Date, Due_Date, Return_Date, Fine_Amount FROM BORROWING ORDER BY Issue_Date DESC")
+        cur.execute("SELECT Borrow_ID, Copy_ID, Member_ID, Issue_Date, Due_Date, Return_Date, Fine_Amount FROM BORROWING ORDER BY Issue_Date DESC, Borrow_ID DESC")
         rows = cur.fetchall()
         return render_template(
             section + ".html",
@@ -330,8 +461,7 @@ def admin_section(section):
         )
 
     elif section == "bookrequests":
-        # Include Decision_Note column in query & view (FR-20, FR-21)
-        cur.execute("SELECT Request_ID, Requester_ID, Requested_Title, Author, Request_Date, Request_Type, Status, Decision_Note FROM REQUEST ORDER BY Request_Date DESC")
+        cur.execute("SELECT Request_ID, Requester_ID, Requested_Title, Author, Request_Date, Request_Type, Status, Decision_Note FROM REQUEST ORDER BY Request_Date DESC, Request_ID DESC")
         rows = cur.fetchall()
         return render_template(
             section + ".html",
@@ -342,6 +472,10 @@ def admin_section(section):
         )
 
     elif section == "genrep":
+        # Dynamic policy thresholds (FR-27, FR-28)
+        dead_years = int(get_policy("DEAD_STOCK_YEARS", "1"))
+        usage_limit = int(get_policy("DEAD_STOCK_USAGE_LIMIT", "2"))
+
         cur.execute("""
             SELECT
                 B.ISBN,
@@ -360,12 +494,12 @@ def admin_section(section):
             GROUP BY
                 B.ISBN, B.Title, B.Subject, B.Price
             HAVING
-                MIN(C.Acquisition_Date) < DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
-                AND COUNT(T.Borrow_ID) < 2
+                MIN(C.Acquisition_Date) < DATE_SUB(CURDATE(), INTERVAL %s YEAR)
+                AND COUNT(T.Borrow_ID) < %s
                 AND COUNT(T.Borrow_ID) < COUNT(C.Copy_ID)
             ORDER BY
                 Total_Usage_Count ASC, First_Acquisition_Date ASC;
-        """)
+        """, (dead_years, usage_limit))
         underutilized = cur.fetchall()
 
         cur.execute("""
@@ -406,6 +540,7 @@ def admin_section(section):
         )
 
     elif section == "genrep2":
+        # FR-24: Usage Pattern (Student vs Faculty Borrowing)
         cur.execute("""
             SELECT
                 M.Type AS Member_Type,
@@ -425,6 +560,7 @@ def admin_section(section):
         """)
         usage = cur.fetchall()
 
+        # FR-25: Top Unfulfilled Faculty Requests
         cur.execute("""
             SELECT
                 R.Requested_Title,
@@ -473,7 +609,7 @@ def admin_section(section):
             books=books
         )
 
-# ----------------- ADMIN ACTIONS & ATOMIC TRANSACTIONS (NFR-05) ----------------- #
+# ----------------- ADMIN ACTIONS & ATOMIC TRANSACTIONS (NFR-05, US-7) ----------------- #
 
 @app.route("/admin/memreq/approve/<id>", methods=["GET", "POST"])
 @login_required
@@ -487,7 +623,6 @@ def mem_req_approve(id):
         if result:
             try:
                 conn.begin()
-                # Password in STUDENT_REQUEST is already hashed with bcrypt from signup
                 cur.execute("""
                     INSERT INTO MEMBER (Member_ID, Name, Email, Type, Username, Password) 
                     VALUES (%s, %s, %s, %s, %s, %s)
@@ -774,7 +909,7 @@ def borrowedbooks_remove(id):
         conn.rollback()
     return redirect("/admin/borrowedbooks")
 
-# ----------------- BOOK ISSUE & RETURN WITH TRANSACTIONS (NFR-05, US-2) ----------------- #
+# ----------------- BOOK ISSUE & RETURN WITH DYNAMIC POLICY (NFR-05, US-2, US-7) ----------------- #
 
 @app.route("/admin/borrowedbooks/new", methods=["GET", "POST"])
 @login_required
@@ -782,7 +917,10 @@ def borrowedbooks_remove(id):
 def borrowedbooks_add():
     conn, cur = ensure_db()
     today_str = datetime.today().strftime('%Y-%m-%d')
-    due_str = (datetime.today() + timedelta(days=14)).strftime('%Y-%m-%d')
+    
+    # FR-27, US-7: Calculate default Due Date dynamically using configured LOAN_PERIOD_DAYS policy
+    loan_days = int(get_policy("LOAN_PERIOD_DAYS", "14"))
+    due_str = (datetime.today() + timedelta(days=loan_days)).strftime('%Y-%m-%d')
 
     if request.method == "GET":
         return render_template(
@@ -876,21 +1014,21 @@ def borrowedbooks_update(id):
         rdate = request.form.get("rdate")
         fine = request.form.get("fine")
 
-        # Wrap Circulation update in atomic transaction (NFR-05)
+        # Dynamic fine rate policy
+        daily_fine_rate = float(get_policy("FINE_RATE_PER_DAY", "10.00"))
+
         try:
             conn.begin()
             cur.execute("SELECT Copy_ID FROM BORROWING WHERE Borrow_ID=%s", (id,))
             b_row = cur.fetchone()
             copy_id = b_row[0] if b_row else None
 
-            # Calculate overdue fine if returned and not manually overridden
-            # (Note: MySQL Calculate_Fine_On_Return trigger also verifies this)
             fine_val = fine if fine else 0.00
             if rdate and ddate:
                 r_dt = datetime.strptime(str(rdate), "%Y-%m-%d").date()
                 d_dt = datetime.strptime(str(ddate), "%Y-%m-%d").date()
                 if r_dt > d_dt:
-                    fine_val = float((r_dt - d_dt).days * 10.00)
+                    fine_val = float((r_dt - d_dt).days * daily_fine_rate)
 
             cur.execute("""
                 UPDATE BORROWING 
@@ -922,10 +1060,11 @@ def borrowedbooks_update(id):
 @login_required
 @role_required("admin")
 def borrowedbooks_quick_return(id):
-    """Atomic quick-return endpoint for overdue fine calculation & copy restoration (NFR-05, US-2)."""
+    """Atomic quick-return endpoint with dynamic policy fine calculation (NFR-05, US-2, US-7)."""
     conn, cur = ensure_db()
     today_str = datetime.today().strftime('%Y-%m-%d')
     today_dt = datetime.today().date()
+    daily_fine_rate = float(get_policy("FINE_RATE_PER_DAY", "10.00"))
 
     try:
         conn.begin()
@@ -940,7 +1079,7 @@ def borrowedbooks_quick_return(id):
                 due_dt = due_date
 
             if today_dt > due_dt:
-                fine = float((today_dt - due_dt).days * 10.00)
+                fine = float((today_dt - due_dt).days * daily_fine_rate)
 
             cur.execute("UPDATE BORROWING SET Return_Date=%s, Fine_Amount=%s WHERE Borrow_ID=%s", [today_str, fine, id])
             if copy_id:

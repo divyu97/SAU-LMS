@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - SAU Library</title>
     <link href="/static/css/admin.css" rel="stylesheet">
 </head>
 <body>
     <div id="header">
-        <div id="login-details">{{ username }} logged in as {{ user_type }}</div>
+        <div id="login-details"><strong>SAU Library</strong> | {{ username }} logged in as {{ user_type }}</div>
         <div id="session-actions">
             <a href="{{ url_for('logout') }}"><button id="logout">Logout</button></a>
         </div>
@@ -22,6 +22,7 @@
             <a href="/admin/viewcopies"><div class="section" id="view-copies">Book Copies</div></a>
             <a href="/admin/borrowedbooks"><div class="section" id="borrowed-books">Borrowed Books</div></a>
             <a href="/admin/bookrequests"><div class="section" id="book-requests">Book Requests</div></a>
+            <a href="/admin/policy"><div class="section" id="policy-settings" style="background: rgba(0, 102, 255, 0.15); font-weight: bold;">Library Policy Settings</div></a>
             <a href="/admin/genrep"><div class="section" id="gen-rep">Generate Reports 1</div></a>
             <a href="/admin/genrep2"><div class="section" id="gen-rep2">Generate Reports 2</div></a>
         </div>
