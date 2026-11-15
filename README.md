@@ -1,7 +1,5 @@
 # South Asian University - Library Management System (LMS)
 
-Software Engineering Prototyping Project — CSE231  
-
 ---
 
 ## Project Structure
