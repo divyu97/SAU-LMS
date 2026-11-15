@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found - SAU Library</title>
+    <link href="/static/css/admin.css" rel="stylesheet">
+    <style>
+        .error-card {
+            max-width: 500px;
+            background: white;
+            margin: 5rem auto;
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .error-code {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #0066ff;
+            margin-bottom: 0.5rem;
+        }
+        .error-msg {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .error-desc {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body style="background: #f0f2f5;">
+    <div class="error-card">
+        <div class="error-code">404</div>
+        <div class="error-msg">Page Not Found</div>
+        <p class="error-desc">
+            The page you are looking for does not exist or has been moved. Please check the URL and try again.
+        </p>
+        <div>
+            {% if current_user.is_authenticated %}
+                {% if current_user.user_type == 'admin' %}
+                    <a href="/admin"><button class="approve" style="padding: 0.7rem 1.5rem; background: #0066ff;">Return to Admin Dashboard</button></a>
+                {% else %}
+                    <a href="/portal"><button class="approve" style="padding: 0.7rem 1.5rem; background: #0066ff;">Return to Member Portal</button></a>
+                {% endif %}
+            {% else %}
+                <a href="/"><button class="approve" style="padding: 0.7rem 1.5rem; background: #0066ff;">Return to Login</button></a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

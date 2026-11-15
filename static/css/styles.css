@@ -94,6 +94,27 @@ button:hover {
     #login-main-heading {
         font-size: 1.8rem;
     }
+
+    body {
+        align-items: flex-start;
+        padding-top: 2rem;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    #login-container {
+        padding: 1.4rem 1.2rem;
+        border-radius: 8px;
+    }
+
+    input, select {
+        font-size: 0.95rem;
+        padding: 0.6rem;
+    }
+
+    button {
+        font-size: 1rem;
+    }
 }
 
 /* Increase spacing between fields in login/signup forms */

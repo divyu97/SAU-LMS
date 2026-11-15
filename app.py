@@ -84,6 +84,10 @@ def role_required(*allowed_roles):
 def forbidden(e):
     return render_template("403.html"), 403
 
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
+
 @login_manager.user_loader
 def load_user(user_id):
     _, cur = ensure_db()
@@ -295,8 +299,8 @@ def member_submit_request():
     try:
         conn.begin()
         cur.execute("""
-            INSERT INTO REQUEST (Requester_ID, Requested_Title, Author, Request_Date, Request_Type, Status, Decision_Note)
-            VALUES (%s, %s, %s, %s, 'Pending', NULL)
+            INSERT INTO REQUEST (Requester_ID, Requested_Title, Author, Request_Type, Request_Date, Status, Decision_Note)
+            VALUES (%s, %s, %s, %s, %s, 'Pending', NULL)
         """, [current_user.member_id, title, author, request_type, today])
         conn.commit()
     except Exception as e:
@@ -322,7 +326,58 @@ def faculty_redirect():
 @login_required
 @role_required("admin")
 def admin():
-    return redirect("/admin/memreq")
+    conn, cur = ensure_db()
+    today_str = datetime.today().strftime('%Y-%m-%d')
+
+    # Stat: total students
+    cur.execute("SELECT COUNT(*) FROM STUDENT")
+    total_students = cur.fetchone()[0]
+
+    # Stat: total faculty
+    cur.execute("SELECT COUNT(*) FROM FACULTY")
+    total_faculty = cur.fetchone()[0]
+
+    # Stat: total book titles
+    cur.execute("SELECT COUNT(*) FROM BOOK")
+    total_books = cur.fetchone()[0]
+
+    # Stat: total copies
+    cur.execute("SELECT COUNT(*) FROM COPY")
+    total_copies = cur.fetchone()[0]
+
+    # Stat: active loans (issued, not yet returned)
+    cur.execute("SELECT COUNT(*) FROM BORROWING WHERE Return_Date IS NULL")
+    active_loans = cur.fetchone()[0]
+
+    # Stat: overdue loans (issued, not returned, past due date)
+    cur.execute("SELECT COUNT(*) FROM BORROWING WHERE Return_Date IS NULL AND Due_Date < %s", (today_str,))
+    overdue_loans = cur.fetchone()[0]
+
+    # Stat: pending membership requests
+    cur.execute("SELECT COUNT(*) FROM STUDENT_REQUEST")
+    pending_memreq = cur.fetchone()[0]
+
+    # Stat: pending book requests
+    cur.execute("SELECT COUNT(*) FROM REQUEST WHERE Status = 'Pending'")
+    pending_bookreq = cur.fetchone()[0]
+
+    stats = {
+        "total_students": total_students,
+        "total_faculty": total_faculty,
+        "total_books": total_books,
+        "total_copies": total_copies,
+        "active_loans": active_loans,
+        "overdue_loans": overdue_loans,
+        "pending_memreq": pending_memreq,
+        "pending_bookreq": pending_bookreq,
+    }
+
+    return render_template(
+        "admin_home.html",
+        username=current_user.username,
+        user_type=current_user.user_type.capitalize(),
+        stats=stats
+    )
 
 @app.route("/admin/policy", methods=["GET", "POST"])
 @login_required

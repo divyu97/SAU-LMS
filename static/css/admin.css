@@ -438,6 +438,29 @@ button, .approve, .remove, .reject, .update {
 }
 
 /* ---------------- MOBILE TWEAKS ---------------- */
+@media (max-width: 768px) {
+    #main-content {
+        padding: 1rem;
+    }
+
+    #col-names {
+        grid-auto-columns: minmax(120px, 1fr);
+    }
+
+    .row {
+        grid-auto-columns: minmax(120px, 1fr);
+    }
+
+    .update, .approve, .remove, .reject {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.82rem;
+    }
+
+    h2, h3 {
+        font-size: 1.1rem;
+    }
+}
+
 @media (max-width: 600px) {
     #main-content form:has(#login-input-container) {
         padding: 1.4rem;
