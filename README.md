@@ -1,7 +1,6 @@
 # South Asian University - Library Management System (LMS)
 
 Software Engineering Prototyping Project — CSE231  
-Developer: Bodapatla Divyendu | Tester: Subham Agarwal
 
 ---
 
